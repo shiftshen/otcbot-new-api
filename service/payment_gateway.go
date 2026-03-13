@@ -151,7 +151,7 @@ type xunhuCreatePaymentResponse struct {
 	ErrMsg    string `json:"errmsg"`
 	URL       string `json:"url"`
 	URLQrcode string `json:"url_qrcode"`
-	OpenID    string `json:"openid"`
+	OpenID    any    `json:"openid"`
 	Hash      string `json:"hash"`
 }
 
