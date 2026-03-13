@@ -14,23 +14,18 @@ The script defaults to the current OTCBOT server layout and can be overridden wi
 
 ## GitHub Actions
 
-The workflow in `.github/workflows/deploy-otcbot.yml` is designed for push-to-deploy.
+The workflow in `.github/workflows/deploy-otcbot.yml` is designed for push-to-deploy through a self-hosted GitHub Actions runner on the OTCBOT server.
 
-Required repository secrets:
+Runner labels expected by the workflow:
 
-- `OTCBOT_HOST`
-- `OTCBOT_PORT`
-- `OTCBOT_USER`
-- `OTCBOT_SSH_PASSWORD`
-- `OTCBOT_DEPLOY_PATH`
-
-Recommended value for `OTCBOT_DEPLOY_PATH`:
-
-`/home/happy/new-api-repo`
+- `self-hosted`
+- `linux`
+- `x64`
+- `otcbot`
 
 ## First-time server bootstrap
 
-Clone your GitHub repository to `/home/happy/new-api-repo` and make the deploy script executable:
+Clone your GitHub repository to `/home/happy/new-api-repo`, register the self-hosted runner, and make the deploy script executable:
 
 ```bash
 cd /home/happy
