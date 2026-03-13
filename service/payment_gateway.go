@@ -70,7 +70,20 @@ func HasOnlinePaymentConfig() bool {
 		operation_setting.EpayKey != ""
 }
 
+func GetPaymentMethodAvailability(method string) (bool, string) {
+	switch DetectPaymentGatewayType() {
+	case GatewayTypeXunhuPay:
+		if method == "wxpay" {
+			return false, "当前仅开通支付宝支付"
+		}
+	}
+	return true, ""
+}
+
 func CreatePayment(args *PaymentPurchaseArgs) (*PaymentPurchaseResult, error) {
+	if enabled, reason := GetPaymentMethodAvailability(args.PaymentMethod); !enabled {
+		return nil, errors.New(reason)
+	}
 	switch DetectPaymentGatewayType() {
 	case GatewayTypeXunhuPay:
 		return createXunhuPayment(args)

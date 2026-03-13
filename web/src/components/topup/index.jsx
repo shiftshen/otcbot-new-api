@@ -408,6 +408,8 @@ const TopUp = () => {
             });
             // 如果没有color，则设置默认颜色
             payMethods = payMethods.map((method) => {
+              method.disabled = method.disabled === true || method.disabled === 'true';
+              method.disabled_reason = method.disabled_reason || '';
               // 规范化最小充值数
               const normalizedMinTopup = Number(method.min_topup);
               method.min_topup = Number.isFinite(normalizedMinTopup)

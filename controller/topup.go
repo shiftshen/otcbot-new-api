@@ -24,6 +24,20 @@ import (
 func GetTopUpInfo(c *gin.Context) {
 	// 获取支付方式
 	payMethods := operation_setting.PayMethods
+	normalizedPayMethods := make([]map[string]string, 0, len(payMethods))
+	for _, method := range payMethods {
+		cloned := make(map[string]string, len(method)+2)
+		for key, value := range method {
+			cloned[key] = value
+		}
+		enabled, reason := service.GetPaymentMethodAvailability(cloned["type"])
+		if !enabled {
+			cloned["disabled"] = "true"
+			cloned["disabled_reason"] = reason
+		}
+		normalizedPayMethods = append(normalizedPayMethods, cloned)
+	}
+	payMethods = normalizedPayMethods
 
 	// 如果启用了 Stripe 支付，添加到支付方法列表
 	if setting.StripeApiSecret != "" && setting.StripeWebhookSecret != "" && setting.StripePriceId != "" {
@@ -136,6 +150,10 @@ func RequestEpay(c *gin.Context) {
 
 	if !operation_setting.ContainsPayMethod(req.PaymentMethod) {
 		c.JSON(200, gin.H{"message": "error", "data": "支付方式不存在"})
+		return
+	}
+	if enabled, reason := service.GetPaymentMethodAvailability(req.PaymentMethod); !enabled {
+		c.JSON(200, gin.H{"message": "error", "data": reason})
 		return
 	}
 

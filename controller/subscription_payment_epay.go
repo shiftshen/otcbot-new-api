@@ -46,6 +46,10 @@ func SubscriptionRequestEpay(c *gin.Context) {
 		common.ApiErrorMsg(c, "支付方式不存在")
 		return
 	}
+	if enabled, reason := service.GetPaymentMethodAvailability(req.PaymentMethod); !enabled {
+		common.ApiErrorMsg(c, reason)
+		return
+	}
 
 	userId := c.GetInt("id")
 	if plan.MaxPurchasePerUser > 0 {

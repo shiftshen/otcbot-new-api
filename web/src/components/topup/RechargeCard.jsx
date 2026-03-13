@@ -295,7 +295,9 @@ const RechargeCard = ({
                           {payMethods.map((payMethod) => {
                             const minTopupVal = Number(payMethod.min_topup) || 0;
                             const isStripe = payMethod.type === 'stripe';
+                            const gatewayDisabled = Boolean(payMethod.disabled);
                             const disabled =
+                              gatewayDisabled ||
                               (!enableOnlineTopUp && !isStripe) ||
                               (!enableStripeTopUp && isStripe) ||
                               minTopupVal > Number(topUpCount || 0);
@@ -334,12 +336,14 @@ const RechargeCard = ({
                             );
 
                             return disabled &&
-                              minTopupVal > Number(topUpCount || 0) ? (
+                              (gatewayDisabled || minTopupVal > Number(topUpCount || 0)) ? (
                               <Tooltip
                                 content={
-                                  t('此支付方式最低充值金额为') +
-                                  ' ' +
-                                  minTopupVal
+                                  gatewayDisabled
+                                    ? payMethod.disabled_reason || t('当前支付方式不可用')
+                                    : t('此支付方式最低充值金额为') +
+                                      ' ' +
+                                      minTopupVal
                                 }
                                 key={payMethod.type}
                               >
