@@ -16,7 +16,6 @@ import (
 	"github.com/QuantumNous/new-api/setting/operation_setting"
 	"github.com/QuantumNous/new-api/setting/system_setting"
 
-	"github.com/Calcium-Ion/go-epay/epay"
 	"github.com/gin-gonic/gin"
 	"github.com/samber/lo"
 	"github.com/shopspring/decimal"
@@ -49,7 +48,7 @@ func GetTopUpInfo(c *gin.Context) {
 	}
 
 	data := gin.H{
-		"enable_online_topup": operation_setting.PayAddress != "" && operation_setting.EpayId != "" && operation_setting.EpayKey != "",
+		"enable_online_topup": service.HasOnlinePaymentConfig(),
 		"enable_stripe_topup": setting.StripeApiSecret != "" && setting.StripeWebhookSecret != "" && setting.StripePriceId != "",
 		"enable_creem_topup":  setting.CreemApiKey != "" && setting.CreemProducts != "[]",
 		"creem_products":      setting.CreemProducts,
@@ -69,20 +68,6 @@ type EpayRequest struct {
 
 type AmountRequest struct {
 	Amount int64 `json:"amount"`
-}
-
-func GetEpayClient() *epay.Client {
-	if operation_setting.PayAddress == "" || operation_setting.EpayId == "" || operation_setting.EpayKey == "" {
-		return nil
-	}
-	withUrl, err := epay.NewClient(&epay.Config{
-		PartnerID: operation_setting.EpayId,
-		Key:       operation_setting.EpayKey,
-	}, operation_setting.PayAddress)
-	if err != nil {
-		return nil
-	}
-	return withUrl
 }
 
 func getPayMoney(amount int64, group string) float64 {
@@ -159,19 +144,17 @@ func RequestEpay(c *gin.Context) {
 	notifyUrl, _ := url.Parse(callBackAddress + "/api/user/epay/notify")
 	tradeNo := fmt.Sprintf("%s%d", common.GetRandomString(6), time.Now().Unix())
 	tradeNo = fmt.Sprintf("USR%dNO%s", id, tradeNo)
-	client := GetEpayClient()
-	if client == nil {
+	if !service.HasOnlinePaymentConfig() {
 		c.JSON(200, gin.H{"message": "error", "data": "当前管理员未配置支付信息"})
 		return
 	}
-	uri, params, err := client.Purchase(&epay.PurchaseArgs{
-		Type:           req.PaymentMethod,
-		ServiceTradeNo: tradeNo,
-		Name:           fmt.Sprintf("TUC%d", req.Amount),
-		Money:          strconv.FormatFloat(payMoney, 'f', 2, 64),
-		Device:         epay.PC,
-		NotifyUrl:      notifyUrl,
-		ReturnUrl:      returnUrl,
+	purchaseResult, err := service.CreatePayment(&service.PaymentPurchaseArgs{
+		PaymentMethod: req.PaymentMethod,
+		TradeNo:       tradeNo,
+		Title:         fmt.Sprintf("TUC%d", req.Amount),
+		Money:         strconv.FormatFloat(payMoney, 'f', 2, 64),
+		NotifyURL:     notifyUrl,
+		ReturnURL:     returnUrl,
 	})
 	if err != nil {
 		c.JSON(200, gin.H{"message": "error", "data": "拉起支付失败"})
@@ -197,7 +180,17 @@ func RequestEpay(c *gin.Context) {
 		c.JSON(200, gin.H{"message": "error", "data": "创建订单失败"})
 		return
 	}
-	c.JSON(200, gin.H{"message": "success", "data": params, "url": uri})
+	responseData := gin.H{}
+	if purchaseResult.PayLink != "" {
+		responseData["pay_link"] = purchaseResult.PayLink
+	}
+	if len(purchaseResult.Params) > 0 {
+		responseData["params"] = purchaseResult.Params
+	}
+	if len(purchaseResult.Raw) > 0 {
+		responseData["raw"] = purchaseResult.Raw
+	}
+	c.JSON(200, gin.H{"message": "success", "data": responseData, "url": purchaseResult.URL})
 }
 
 // tradeNo lock
@@ -254,8 +247,7 @@ func EpayNotify(c *gin.Context) {
 		_, _ = c.Writer.Write([]byte("fail"))
 		return
 	}
-	client := GetEpayClient()
-	if client == nil {
+	if !service.HasOnlinePaymentConfig() {
 		log.Println("易支付回调失败 未找到配置信息")
 		_, err := c.Writer.Write([]byte("fail"))
 		if err != nil {
@@ -263,7 +255,7 @@ func EpayNotify(c *gin.Context) {
 		}
 		return
 	}
-	verifyInfo, err := client.Verify(params)
+	verifyInfo, err := service.VerifyPayment(params)
 	if err == nil && verifyInfo.VerifyStatus {
 		_, err := c.Writer.Write([]byte("success"))
 		if err != nil {
@@ -278,11 +270,11 @@ func EpayNotify(c *gin.Context) {
 		return
 	}
 
-	if verifyInfo.TradeStatus == epay.StatusTradeSuccess {
+	if service.IsPaymentSuccessStatus(verifyInfo.TradeStatus) {
 		log.Println(verifyInfo)
-		LockOrder(verifyInfo.ServiceTradeNo)
-		defer UnlockOrder(verifyInfo.ServiceTradeNo)
-		topUp := model.GetTopUpByTradeNo(verifyInfo.ServiceTradeNo)
+		LockOrder(verifyInfo.TradeNo)
+		defer UnlockOrder(verifyInfo.TradeNo)
+		topUp := model.GetTopUpByTradeNo(verifyInfo.TradeNo)
 		if topUp == nil {
 			log.Printf("易支付回调未找到订单: %v", verifyInfo)
 			return

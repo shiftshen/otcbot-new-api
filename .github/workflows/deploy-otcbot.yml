@@ -1,0 +1,24 @@
+name: Deploy OTCBOT
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.OTCBOT_HOST }}
+          username: ${{ secrets.OTCBOT_USER }}
+          password: ${{ secrets.OTCBOT_SSH_PASSWORD }}
+          port: ${{ secrets.OTCBOT_PORT }}
+          script: |
+            set -e
+            cd ${{ secrets.OTCBOT_DEPLOY_PATH }}
+            chmod +x deploy/otcbot-deploy.sh
+            ./deploy/otcbot-deploy.sh

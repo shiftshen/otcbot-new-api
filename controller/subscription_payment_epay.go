@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Calcium-Ion/go-epay/epay"
 	"github.com/QuantumNous/new-api/common"
 	"github.com/QuantumNous/new-api/model"
 	"github.com/QuantumNous/new-api/service"
@@ -75,8 +74,7 @@ func SubscriptionRequestEpay(c *gin.Context) {
 	tradeNo := fmt.Sprintf("%s%d", common.GetRandomString(6), time.Now().Unix())
 	tradeNo = fmt.Sprintf("SUBUSR%dNO%s", userId, tradeNo)
 
-	client := GetEpayClient()
-	if client == nil {
+	if !service.HasOnlinePaymentConfig() {
 		common.ApiErrorMsg(c, "当前管理员未配置支付信息")
 		return
 	}
@@ -94,21 +92,30 @@ func SubscriptionRequestEpay(c *gin.Context) {
 		common.ApiErrorMsg(c, "创建订单失败")
 		return
 	}
-	uri, params, err := client.Purchase(&epay.PurchaseArgs{
-		Type:           req.PaymentMethod,
-		ServiceTradeNo: tradeNo,
-		Name:           fmt.Sprintf("SUB:%s", plan.Title),
-		Money:          strconv.FormatFloat(plan.PriceAmount, 'f', 2, 64),
-		Device:         epay.PC,
-		NotifyUrl:      notifyUrl,
-		ReturnUrl:      returnUrl,
+	purchaseResult, err := service.CreatePayment(&service.PaymentPurchaseArgs{
+		PaymentMethod: req.PaymentMethod,
+		TradeNo:       tradeNo,
+		Title:         fmt.Sprintf("SUB:%s", plan.Title),
+		Money:         strconv.FormatFloat(plan.PriceAmount, 'f', 2, 64),
+		NotifyURL:     notifyUrl,
+		ReturnURL:     returnUrl,
 	})
 	if err != nil {
 		_ = model.ExpireSubscriptionOrder(tradeNo)
 		common.ApiErrorMsg(c, "拉起支付失败")
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "success", "data": params, "url": uri})
+	responseData := gin.H{}
+	if purchaseResult.PayLink != "" {
+		responseData["pay_link"] = purchaseResult.PayLink
+	}
+	if len(purchaseResult.Params) > 0 {
+		responseData["params"] = purchaseResult.Params
+	}
+	if len(purchaseResult.Raw) > 0 {
+		responseData["raw"] = purchaseResult.Raw
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "success", "data": responseData, "url": purchaseResult.URL})
 }
 
 func SubscriptionEpayNotify(c *gin.Context) {
@@ -137,26 +144,25 @@ func SubscriptionEpayNotify(c *gin.Context) {
 		return
 	}
 
-	client := GetEpayClient()
-	if client == nil {
+	if !service.HasOnlinePaymentConfig() {
 		_, _ = c.Writer.Write([]byte("fail"))
 		return
 	}
-	verifyInfo, err := client.Verify(params)
+	verifyInfo, err := service.VerifyPayment(params)
 	if err != nil || !verifyInfo.VerifyStatus {
 		_, _ = c.Writer.Write([]byte("fail"))
 		return
 	}
 
-	if verifyInfo.TradeStatus != epay.StatusTradeSuccess {
+	if !service.IsPaymentSuccessStatus(verifyInfo.TradeStatus) {
 		_, _ = c.Writer.Write([]byte("fail"))
 		return
 	}
 
-	LockOrder(verifyInfo.ServiceTradeNo)
-	defer UnlockOrder(verifyInfo.ServiceTradeNo)
+	LockOrder(verifyInfo.TradeNo)
+	defer UnlockOrder(verifyInfo.TradeNo)
 
-	if err := model.CompleteSubscriptionOrder(verifyInfo.ServiceTradeNo, common.GetJsonString(verifyInfo)); err != nil {
+	if err := model.CompleteSubscriptionOrder(verifyInfo.TradeNo, common.GetJsonString(verifyInfo)); err != nil {
 		_, _ = c.Writer.Write([]byte("fail"))
 		return
 	}
@@ -192,20 +198,19 @@ func SubscriptionEpayReturn(c *gin.Context) {
 		return
 	}
 
-	client := GetEpayClient()
-	if client == nil {
+	if !service.HasOnlinePaymentConfig() {
 		c.Redirect(http.StatusFound, system_setting.ServerAddress+"/console/topup?pay=fail")
 		return
 	}
-	verifyInfo, err := client.Verify(params)
+	verifyInfo, err := service.VerifyPayment(params)
 	if err != nil || !verifyInfo.VerifyStatus {
 		c.Redirect(http.StatusFound, system_setting.ServerAddress+"/console/topup?pay=fail")
 		return
 	}
-	if verifyInfo.TradeStatus == epay.StatusTradeSuccess {
-		LockOrder(verifyInfo.ServiceTradeNo)
-		defer UnlockOrder(verifyInfo.ServiceTradeNo)
-		if err := model.CompleteSubscriptionOrder(verifyInfo.ServiceTradeNo, common.GetJsonString(verifyInfo)); err != nil {
+	if service.IsPaymentSuccessStatus(verifyInfo.TradeStatus) {
+		LockOrder(verifyInfo.TradeNo)
+		defer UnlockOrder(verifyInfo.TradeNo)
+		if err := model.CompleteSubscriptionOrder(verifyInfo.TradeNo, common.GetJsonString(verifyInfo)); err != nil {
 			c.Redirect(http.StatusFound, system_setting.ServerAddress+"/console/topup?pay=fail")
 			return
 		}

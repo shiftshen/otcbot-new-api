@@ -224,8 +224,12 @@ const TopUp = () => {
             // Stripe 支付回调处理
             window.open(data.pay_link, '_blank');
           } else {
+            if (data?.pay_link) {
+              window.open(data.pay_link, '_blank');
+              return;
+            }
             // 普通支付表单提交
-            let params = data;
+            let params = data?.params || data;
             let url = res.data.url;
             let form = document.createElement('form');
             form.action = url;

@@ -219,7 +219,7 @@ export default function SettingsPaymentGateway(props) {
         <Form.Section text={t('支付设置')}>
           <Text>
             {t(
-              '（当前仅支持易支付接口，默认使用上方服务器地址作为回调地址！）',
+              '（支持易支付与迅虎支付；当支付地址填写迅虎 V3 网关时会自动切换为迅虎协议，默认使用上方服务器地址作为回调地址！）',
             )}
           </Text>
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}>
@@ -227,20 +227,22 @@ export default function SettingsPaymentGateway(props) {
               <Form.Input
                 field='PayAddress'
                 label={t('支付地址')}
-                placeholder={t('例如：https://yourdomain.com')}
+                placeholder={t(
+                  '例如：https://api.xunhupay.com/payment/do.html',
+                )}
               />
             </Col>
             <Col xs={24} sm={24} md={8} lg={8} xl={8}>
               <Form.Input
                 field='EpayId'
-                label={t('易支付商户ID')}
-                placeholder={t('例如：0001')}
+                label={t('商户 ID / AppID')}
+                placeholder={t('例如：201906177554')}
               />
             </Col>
             <Col xs={24} sm={24} md={8} lg={8} xl={8}>
               <Form.Input
                 field='EpayKey'
-                label={t('易支付商户密钥')}
+                label={t('商户密钥 / AppSecret')}
                 placeholder={t('敏感信息不会发送到前端显示')}
                 type='password'
               />
