@@ -101,8 +101,9 @@ func SubscriptionRequestEpay(c *gin.Context) {
 		ReturnURL:     returnUrl,
 	})
 	if err != nil {
+		logger.LogError(c, fmt.Sprintf("failed to create subscription payment, method=%s, trade_no=%s, amount=%.2f, err=%v", req.PaymentMethod, tradeNo, plan.PriceAmount, err))
 		_ = model.ExpireSubscriptionOrder(tradeNo)
-		common.ApiErrorMsg(c, "拉起支付失败")
+		common.ApiErrorMsg(c, fmt.Sprintf("拉起支付失败: %v", err))
 		return
 	}
 	responseData := gin.H{}

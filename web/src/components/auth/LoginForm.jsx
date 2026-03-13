@@ -65,7 +65,7 @@ import WeChatIcon from '../common/logo/WeChatIcon';
 import LinuxDoIcon from '../common/logo/LinuxDoIcon';
 import TwoFAVerification from './TwoFAVerification';
 import { useTranslation } from 'react-i18next';
-import { SiDiscord } from 'react-icons/si';
+import { SiDiscord, SiGoogle } from 'react-icons/si';
 
 const LoginForm = () => {
   let navigate = useNavigate();
@@ -131,6 +131,14 @@ const LoginForm = () => {
       return {};
     }
   }, [statusState?.status]);
+  const oidcAuthorizationEndpoint = status?.oidc_authorization_endpoint || '';
+  const isGoogleOIDC = oidcAuthorizationEndpoint.includes('accounts.google.com');
+  const oidcButtonText = isGoogleOIDC ? t('使用 Google 继续') : t('使用 OIDC 继续');
+  const oidcButtonIcon = isGoogleOIDC ? (
+    <SiGoogle style={{ color: '#4285F4' }} />
+  ) : (
+    <OIDCIcon style={{ color: '#1877F2' }} />
+  );
   const hasCustomOAuthProviders =
     (status.custom_oauth_providers || []).length > 0;
   const hasOAuthLoginOptions = Boolean(
@@ -574,11 +582,11 @@ const LoginForm = () => {
                     theme='outline'
                     className='w-full h-12 flex items-center justify-center !rounded-full border border-gray-200 hover:bg-gray-50 transition-colors'
                     type='tertiary'
-                    icon={<OIDCIcon style={{ color: '#1877F2' }} />}
+                    icon={oidcButtonIcon}
                     onClick={handleOIDCClick}
                     loading={oidcLoading}
                   >
-                    <span className='ml-3'>{t('使用 OIDC 继续')}</span>
+                    <span className='ml-3'>{oidcButtonText}</span>
                   </Button>
                 )}
 

@@ -157,7 +157,8 @@ func RequestEpay(c *gin.Context) {
 		ReturnURL:     returnUrl,
 	})
 	if err != nil {
-		c.JSON(200, gin.H{"message": "error", "data": "拉起支付失败"})
+		logger.LogError(c, fmt.Sprintf("failed to create payment, method=%s, trade_no=%s, money=%.2f, err=%v", req.PaymentMethod, tradeNo, payMoney, err))
+		c.JSON(200, gin.H{"message": "error", "data": fmt.Sprintf("拉起支付失败: %v", err)})
 		return
 	}
 	amount := req.Amount
