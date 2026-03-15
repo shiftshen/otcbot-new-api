@@ -52,6 +52,12 @@
 
 </div>
 
+## Fork Note
+
+This repository also powers `https://api.otcbot.com` through a maintained fork.
+OTCBot-specific production customizations and the upstream-sync strategy are
+documented in [docs/otcbot-maintenance-plan.md](./docs/otcbot-maintenance-plan.md).
+
 ## 📝 Project Description
 
 > [!IMPORTANT]

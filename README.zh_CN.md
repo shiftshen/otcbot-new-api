@@ -52,6 +52,12 @@
 
 </div>
 
+## Fork 说明
+
+本仓库同时作为 `https://api.otcbot.com` 的生产分支进行维护。
+OTCBot 的定制项、发布要点以及与官方版本保持兼容的升级策略，见
+[docs/otcbot-maintenance-plan.md](./docs/otcbot-maintenance-plan.md)。
+
 ## 📝 项目说明
 
 > [!IMPORTANT]
