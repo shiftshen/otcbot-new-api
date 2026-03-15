@@ -98,6 +98,15 @@ System.out.println(completion.choices().get(0).message().content().get(0));`,
     "model": "gpt-5.2",
     "input": "帮我写一句欢迎语"
   }'`,
+      gpt54: `curl ${apiBaseUrl}/chat/completions \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer YOUR_API_KEY" \\
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [
+      {"role": "user", "content": "reply with ok only"}
+    ]
+  }'`,
     }),
     [apiBaseUrl],
   );
@@ -170,8 +179,8 @@ System.out.println(completion.choices().get(0).message().content().get(0));`,
           </Title>
           <Paragraph type='secondary'>
             {isChinese
-              ? '你充值后创建的 sk- 密钥，就是调用接口时放在 Authorization 里的 Bearer Token。本站兼容 OpenAI 风格接口，默认示例模型使用 gpt-5.2。'
-              : 'Your generated sk- key is the Bearer token used in Authorization. This site exposes OpenAI-compatible APIs, and the default example model is gpt-5.2.'}
+              ? '你充值后创建的 sk- 密钥，就是调用接口时放在 Authorization 里的 Bearer Token。本站兼容 OpenAI 风格接口，默认示例模型使用 gpt-5.2，gpt-5.4 也已实测可用。'
+              : 'Your generated sk- key is the Bearer token used in Authorization. This site exposes OpenAI-compatible APIs, the default example model is gpt-5.2, and gpt-5.4 has also been verified as available.'}
           </Paragraph>
           <div className='flex flex-wrap gap-3'>
             <Link to='/console/token'>
@@ -245,8 +254,8 @@ System.out.println(completion.choices().get(0).message().content().get(0));`,
             </div>
             <Paragraph type='secondary'>
               {isChinese
-                ? '以上模型来自当前线上 token 的可见模型列表实测结果。默认接入示例统一使用 gpt-5.2；gpt-4.5-preview 当前并不在这个 token 的可用范围内。'
-                : 'These models come from a real /v1/models check on the current production token. The default example model is gpt-5.2; gpt-4.5-preview is not currently available to this token.'}
+                ? '以上模型来自当前线上 token 的可见模型列表实测结果。默认接入示例使用 gpt-5.2，gpt-5.4 也已经完成真实调用验证；gpt-4.5-preview 当前并不在这个 token 的可用范围内。'
+                : 'These models come from a real /v1/models check on the current production token. The default example model is gpt-5.2, gpt-5.4 has also been verified with real requests, and gpt-4.5-preview is not currently available to this token.'}
             </Paragraph>
           </Space>
         </Card>
@@ -260,6 +269,9 @@ System.out.println(completion.choices().get(0).message().content().get(0));`,
             <div className='flex flex-wrap gap-3'>
               <Button onClick={() => handleCopy(examples.curl)}>
                 {isChinese ? '复制 cURL' : 'Copy cURL'}
+              </Button>
+              <Button onClick={() => handleCopy(examples.gpt54)}>
+                {isChinese ? '复制 gpt-5.4 示例' : 'Copy gpt-5.4 Example'}
               </Button>
               <Button onClick={() => handleCopy(examples.responses)}>
                 {isChinese ? '复制 Responses 示例' : 'Copy Responses'}

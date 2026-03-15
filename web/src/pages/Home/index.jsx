@@ -199,8 +199,8 @@ const Home = () => {
                   </h1>
                   <p className='text-base md:text-lg lg:text-xl text-semi-color-text-1 mt-4 md:mt-6 max-w-xl'>
                     {isChinese
-                      ? '充值后创建密钥，直接用 OpenAI 兼容方式接入。当前默认示例模型使用 gpt-5.2。'
-                      : 'Create a key, use the OpenAI-compatible API, and start with gpt-5.2 by default.'}
+                      ? '充值后创建密钥，直接用 OpenAI 兼容方式接入。默认示例使用 gpt-5.2，gpt-5.4 也已可直接调用。'
+                      : 'Create a key, use the OpenAI-compatible API, and start with gpt-5.2 by default. gpt-5.4 is also available now.'}
                   </p>
                   {/* BASE URL 与端点选择 */}
                   <div className='flex flex-col md:flex-row items-center justify-center gap-4 w-full mt-4 md:mt-6 max-w-md'>
