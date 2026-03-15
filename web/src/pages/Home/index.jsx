@@ -25,7 +25,16 @@ import {
   ScrollList,
   ScrollItem,
 } from '@douyinfe/semi-ui';
-import { API, showError, copy, showSuccess } from '../../helpers';
+import {
+  API,
+  showError,
+  copy,
+  showSuccess,
+  resolveDocsLink,
+  isInternalLink,
+  toInternalPath,
+  getSystemName,
+} from '../../helpers';
 import { useIsMobile } from '../../hooks/common/useIsMobile';
 import { API_ENDPOINTS } from '../../constants/common.constant';
 import { StatusContext } from '../../context/Status';
@@ -39,6 +48,7 @@ import {
   IconCopy,
 } from '@douyinfe/semi-icons';
 import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import NoticeModal from '../../components/layout/NoticeModal';
 import {
   Moonshot,
@@ -68,15 +78,17 @@ const { Text } = Typography;
 const Home = () => {
   const { t, i18n } = useTranslation();
   const [statusState] = useContext(StatusContext);
+  const navigate = useNavigate();
   const actualTheme = useActualTheme();
   const [homePageContentLoaded, setHomePageContentLoaded] = useState(false);
   const [homePageContent, setHomePageContent] = useState('');
   const [noticeVisible, setNoticeVisible] = useState(false);
   const isMobile = useIsMobile();
   const isDemoSiteMode = statusState?.status?.demo_site_enabled || false;
-  const docsLink = statusState?.status?.docs_link || '';
+  const docsLink = resolveDocsLink(statusState?.status?.docs_link || '');
   const serverAddress =
     statusState?.status?.server_address || `${window.location.origin}`;
+  const systemName = getSystemName();
   const endpointItems = API_ENDPOINTS.map((e) => ({ value: e }));
   const [endpointIndex, setEndpointIndex] = useState(0);
   const isChinese = i18n.language.startsWith('zh');
@@ -115,6 +127,14 @@ const Home = () => {
     if (ok) {
       showSuccess(t('已复制到剪切板'));
     }
+  };
+
+  const openDocs = () => {
+    if (isInternalLink(docsLink)) {
+      navigate(toInternalPath(docsLink));
+      return;
+    }
+    window.open(docsLink, '_blank');
   };
 
   useEffect(() => {
@@ -170,13 +190,17 @@ const Home = () => {
                     className={`text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-semi-color-text-0 leading-tight ${isChinese ? 'tracking-wide md:tracking-wider' : ''}`}
                   >
                     <>
-                      {t('统一的')}
+                      {systemName}
                       <br />
-                      <span className='shine-text'>{t('大模型接口网关')}</span>
+                      <span className='shine-text'>
+                        {isChinese ? '大模型 API 平台' : 'LLM API Platform'}
+                      </span>
                     </>
                   </h1>
                   <p className='text-base md:text-lg lg:text-xl text-semi-color-text-1 mt-4 md:mt-6 max-w-xl'>
-                    {t('更好的价格，更好的稳定性，只需要将模型基址替换为：')}
+                    {isChinese
+                      ? '充值后直接创建密钥，把 OpenAI 兼容请求的 Base URL 指向这里即可。'
+                      : 'Create a key and point your OpenAI-compatible Base URL here.'}
                   </p>
                   {/* BASE URL 与端点选择 */}
                   <div className='flex flex-col md:flex-row items-center justify-center gap-4 w-full mt-4 md:mt-6 max-w-md'>
@@ -244,7 +268,7 @@ const Home = () => {
                         size={isMobile ? 'default' : 'large'}
                         className='flex items-center !rounded-3xl px-6 py-2'
                         icon={<IconFile />}
-                        onClick={() => window.open(docsLink, '_blank')}
+                        onClick={openDocs}
                       >
                         {t('文档')}
                       </Button>

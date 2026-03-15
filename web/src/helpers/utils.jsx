@@ -69,6 +69,36 @@ export function getFooterHTML() {
   return localStorage.getItem('footer_html');
 }
 
+export function resolveDocsLink(docsLink = '') {
+  const fallbackLink = `${window.location.origin}/docs`;
+  if (!docsLink) return fallbackLink;
+  if (docsLink.includes('docs.newapi.pro')) return fallbackLink;
+  if (docsLink === '/docs') return fallbackLink;
+  return docsLink;
+}
+
+export function isInternalLink(link = '') {
+  if (!link) return false;
+  if (link.startsWith('/')) return true;
+  try {
+    const target = new URL(link, window.location.origin);
+    return target.origin === window.location.origin;
+  } catch (error) {
+    return false;
+  }
+}
+
+export function toInternalPath(link = '') {
+  if (!link) return '/docs';
+  if (link.startsWith('/')) return link;
+  try {
+    const target = new URL(link, window.location.origin);
+    return `${target.pathname}${target.search}${target.hash}`;
+  } catch (error) {
+    return '/docs';
+  }
+}
+
 export async function copy(text) {
   let okay = true;
   try {

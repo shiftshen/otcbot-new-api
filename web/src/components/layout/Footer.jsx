@@ -20,7 +20,12 @@ For commercial licensing, please contact support@quantumnous.com
 import React, { useEffect, useState, useMemo, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Typography } from '@douyinfe/semi-ui';
-import { getFooterHTML, getLogo, getSystemName } from '../../helpers';
+import {
+  getFooterHTML,
+  getLogo,
+  getSystemName,
+  resolveDocsLink,
+} from '../../helpers';
 import { StatusContext } from '../../context/Status';
 
 const FooterBar = () => {
@@ -30,6 +35,7 @@ const FooterBar = () => {
   const logo = getLogo();
   const [statusState] = useContext(StatusContext);
   const isDemoSiteMode = statusState?.status?.demo_site_enabled || false;
+  const docsLink = resolveDocsLink(statusState?.status?.docs_link || '');
 
   const loadFooter = () => {
     let footer_html = localStorage.getItem('footer_html');
@@ -63,28 +69,28 @@ const FooterBar = () => {
                 </p>
                 <div className='flex flex-col gap-4'>
                   <a
-                    href='https://docs.newapi.pro/wiki/project-introduction/'
+                    href='/about'
                     target='_blank'
                     rel='noopener noreferrer'
                     className='!text-semi-color-text-1'
                   >
-                    {t('关于项目')}
+                    {systemName}
                   </a>
                   <a
-                    href='https://docs.newapi.pro/support/community-interaction/'
+                    href='/login'
                     target='_blank'
                     rel='noopener noreferrer'
                     className='!text-semi-color-text-1'
                   >
-                    {t('联系我们')}
+                    {t('登录')}
                   </a>
                   <a
-                    href='https://docs.newapi.pro/wiki/features-introduction/'
+                    href='/register'
                     target='_blank'
                     rel='noopener noreferrer'
                     className='!text-semi-color-text-1'
                   >
-                    {t('功能特性')}
+                    {t('注册')}
                   </a>
                 </div>
               </div>
@@ -95,7 +101,7 @@ const FooterBar = () => {
                 </p>
                 <div className='flex flex-col gap-4'>
                   <a
-                    href='https://docs.newapi.pro/getting-started/'
+                    href={docsLink}
                     target='_blank'
                     rel='noopener noreferrer'
                     className='!text-semi-color-text-1'
@@ -103,15 +109,15 @@ const FooterBar = () => {
                     {t('快速开始')}
                   </a>
                   <a
-                    href='https://docs.newapi.pro/installation/'
+                    href='/console/token'
                     target='_blank'
                     rel='noopener noreferrer'
                     className='!text-semi-color-text-1'
                   >
-                    {t('安装指南')}
+                    {t('密钥')}
                   </a>
                   <a
-                    href='https://docs.newapi.pro/api/'
+                    href={docsLink}
                     target='_blank'
                     rel='noopener noreferrer'
                     className='!text-semi-color-text-1'
@@ -127,28 +133,28 @@ const FooterBar = () => {
                 </p>
                 <div className='flex flex-col gap-4'>
                   <a
-                    href='https://github.com/songquanpeng/one-api'
+                    href='/pricing'
                     target='_blank'
                     rel='noopener noreferrer'
                     className='!text-semi-color-text-1'
                   >
-                    One API
+                    {t('模型广场')}
                   </a>
                   <a
-                    href='https://github.com/novicezk/midjourney-proxy'
+                    href='/console/topup'
                     target='_blank'
                     rel='noopener noreferrer'
                     className='!text-semi-color-text-1'
                   >
-                    Midjourney-Proxy
+                    {t('账户充值')}
                   </a>
                   <a
-                    href='https://github.com/Calcium-Ion/neko-api-key-tool'
+                    href='/console'
                     target='_blank'
                     rel='noopener noreferrer'
                     className='!text-semi-color-text-1'
                   >
-                    neko-api-key-tool
+                    {t('控制台')}
                   </a>
                 </div>
               </div>
@@ -159,28 +165,28 @@ const FooterBar = () => {
                 </p>
                 <div className='flex flex-col gap-4'>
                   <a
-                    href='https://github.com/Calcium-Ion/new-api-horizon'
+                    href={docsLink}
                     target='_blank'
                     rel='noopener noreferrer'
                     className='!text-semi-color-text-1'
                   >
-                    new-api-horizon
+                    {t('接入文档')}
                   </a>
                   <a
-                    href='https://github.com/coaidev/coai'
+                    href='/about'
                     target='_blank'
                     rel='noopener noreferrer'
                     className='!text-semi-color-text-1'
                   >
-                    CoAI
+                    {t('关于')}
                   </a>
                   <a
-                    href='https://www.gpt-load.com/'
+                    href='/'
                     target='_blank'
                     rel='noopener noreferrer'
                     className='!text-semi-color-text-1'
                   >
-                    GPT-Load
+                    {t('首页')}
                   </a>
                 </div>
               </div>
@@ -200,18 +206,18 @@ const FooterBar = () => {
               {t('设计与开发由')}{' '}
             </span>
             <a
-              href='https://github.com/QuantumNous/new-api'
+              href='https://api.otcbot.com'
               target='_blank'
               rel='noopener noreferrer'
               className='!text-semi-color-primary font-medium'
             >
-              New API
+              {systemName}
             </a>
           </div>
         </div>
       </footer>
     ),
-    [logo, systemName, t, currentYear, isDemoSiteMode],
+    [docsLink, logo, systemName, t, currentYear, isDemoSiteMode],
   );
 
   useEffect(() => {
@@ -229,12 +235,12 @@ const FooterBar = () => {
           <div className='absolute bottom-2 right-4 text-xs !text-semi-color-text-2 opacity-70'>
             <span>{t('设计与开发由')} </span>
             <a
-              href='https://github.com/QuantumNous/new-api'
+              href='https://api.otcbot.com'
               target='_blank'
               rel='noopener noreferrer'
               className='!text-semi-color-primary font-medium'
             >
-              New API
+              {systemName}
             </a>
           </div>
         </div>

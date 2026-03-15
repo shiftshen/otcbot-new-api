@@ -18,6 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import { useMemo } from 'react';
+import { isInternalLink, toInternalPath } from '../../helpers';
 
 export const useNavigation = (t, docsLink, headerNavModules) => {
   const mainNavLinks = useMemo(() => {
@@ -51,12 +52,18 @@ export const useNavigation = (t, docsLink, headerNavModules) => {
       },
       ...(docsLink
         ? [
-            {
-              text: t('文档'),
-              itemKey: 'docs',
-              isExternal: true,
-              externalLink: docsLink,
-            },
+            isInternalLink(docsLink)
+              ? {
+                  text: t('文档'),
+                  itemKey: 'docs',
+                  to: toInternalPath(docsLink),
+                }
+              : {
+                  text: t('文档'),
+                  itemKey: 'docs',
+                  isExternal: true,
+                  externalLink: docsLink,
+                },
           ]
         : []),
       {

@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { useEffect, useState } from 'react';
-import { API, showError } from '../../helpers';
+import { API, getSystemName, showError } from '../../helpers';
 import { marked } from 'marked';
 import { Empty } from '@douyinfe/semi-ui';
 import {
@@ -32,6 +32,7 @@ const About = () => {
   const [about, setAbout] = useState('');
   const [aboutLoaded, setAboutLoaded] = useState(false);
   const currentYear = new Date().getFullYear();
+  const systemName = getSystemName();
 
   const displayAbout = async () => {
     setAbout(localStorage.getItem('about') || '');
@@ -62,51 +63,40 @@ const About = () => {
   const customDescription = (
     <div style={{ textAlign: 'center' }}>
       <p>{t('可在设置页面设置关于内容，支持 HTML & Markdown')}</p>
-      {t('New API项目仓库地址：')}
+      <p>{t('站点默认关于页未设置时，将展示这段基础说明。')}</p>
+      <p>
+        {systemName} {t('提供统一的大模型 API 接入、账户充值与密钥管理能力。')}
+      </p>
+      <p>
+        {t('建议在控制台创建个人密钥后，通过 OpenAI 兼容方式接入。文档入口：')}
+        <a
+          href='/docs'
+          target='_blank'
+          rel='noopener noreferrer'
+          className='!text-semi-color-primary'
+        >
+          /docs
+        </a>
+      </p>
+      {t('项目源码仓库：')}
       <a
-        href='https://github.com/QuantumNous/new-api'
+        href='https://github.com/shiftshen/otcbot-new-api'
         target='_blank'
         rel='noopener noreferrer'
         className='!text-semi-color-primary'
       >
-        https://github.com/QuantumNous/new-api
+        https://github.com/shiftshen/otcbot-new-api
       </a>
       <p>
         <a
-          href='https://github.com/QuantumNous/new-api'
+          href='https://github.com/shiftshen/otcbot-new-api'
           target='_blank'
           rel='noopener noreferrer'
           className='!text-semi-color-primary'
         >
-          NewAPI
+          {systemName}
         </a>{' '}
-        {t('© {{currentYear}}', { currentYear })}{' '}
-        <a
-          href='https://github.com/QuantumNous'
-          target='_blank'
-          rel='noopener noreferrer'
-          className='!text-semi-color-primary'
-        >
-          QuantumNous
-        </a>{' '}
-        {t('| 基于')}{' '}
-        <a
-          href='https://github.com/songquanpeng/one-api/releases/tag/v0.5.4'
-          target='_blank'
-          rel='noopener noreferrer'
-          className='!text-semi-color-primary'
-        >
-          One API v0.5.4
-        </a>{' '}
-        © 2023{' '}
-        <a
-          href='https://github.com/songquanpeng'
-          target='_blank'
-          rel='noopener noreferrer'
-          className='!text-semi-color-primary'
-        >
-          JustSong
-        </a>
+        {t('© {{currentYear}}', { currentYear })}
       </p>
       <p>
         {t('本项目根据')}
