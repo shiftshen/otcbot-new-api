@@ -185,3 +185,53 @@ func TestChannelAffinityHitCodexTemplatePassHeadersEffective(t *testing.T) {
 	_, exists = info.RuntimeHeadersOverride["x-codex-turn-metadata"]
 	require.False(t, exists)
 }
+
+func TestChannelAffinityHitCodexTemplateSyncsPromptCacheKeyToSessionID(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	setting := operation_setting.GetChannelAffinitySetting()
+	require.NotNil(t, setting)
+
+	var codexRule *operation_setting.ChannelAffinityRule
+	for i := range setting.Rules {
+		rule := &setting.Rules[i]
+		if strings.EqualFold(strings.TrimSpace(rule.Name), "codex cli trace") {
+			codexRule = rule
+			break
+		}
+	}
+	require.NotNil(t, codexRule)
+
+	ctx := buildChannelAffinityTemplateContextForTest(channelAffinityMeta{
+		RuleName:      codexRule.Name,
+		ParamTemplate: codexRule.ParamOverrideTemplate,
+		UsingGroup:    "default",
+		ModelName:     "gpt-5.4",
+		RequestPath:   "/v1/responses",
+		KeySourceType: "gjson",
+		KeySourcePath: "prompt_cache_key",
+	})
+	ctx.Request = httptest.NewRequest(http.MethodPost, "/v1/responses", strings.NewReader(`{"model":"gpt-5.4","prompt_cache_key":"pc-sync-123"}`))
+	ctx.Request.Header.Set("Content-Type", "application/json")
+
+	mergedOverride, applied := ApplyChannelAffinityOverrideTemplate(ctx, nil)
+	require.True(t, applied)
+
+	info := &relaycommon.RelayInfo{
+		RequestHeaders: map[string]string{
+			"Originator": "Codex CLI",
+			"User-Agent": "codex-cli-test",
+		},
+		ChannelMeta: &relaycommon.ChannelMeta{
+			ParamOverride: mergedOverride,
+		},
+	}
+
+	out, err := relaycommon.ApplyParamOverrideWithRelayInfo([]byte(`{"model":"gpt-5.4","prompt_cache_key":"pc-sync-123"}`), info)
+	require.NoError(t, err)
+	require.JSONEq(t, `{"model":"gpt-5.4","prompt_cache_key":"pc-sync-123"}`, string(out))
+	require.True(t, info.UseRuntimeHeadersOverride)
+	require.Equal(t, "pc-sync-123", info.RuntimeHeadersOverride["session_id"])
+	require.Equal(t, "Codex CLI", info.RuntimeHeadersOverride["originator"])
+	require.Equal(t, "codex-cli-test", info.RuntimeHeadersOverride["user-agent"])
+}

@@ -72,6 +72,25 @@ func buildPassHeaderTemplate(headers []string) map[string]interface{} {
 	}
 }
 
+func buildCodexCliPassHeaderTemplate(headers []string) map[string]interface{} {
+	clonedHeaders := make([]string, 0, len(headers))
+	clonedHeaders = append(clonedHeaders, headers...)
+	return map[string]interface{}{
+		"operations": []map[string]interface{}{
+			{
+				"mode":        "pass_headers",
+				"value":       clonedHeaders,
+				"keep_origin": true,
+			},
+			{
+				"mode": "sync_fields",
+				"from": "header:session_id",
+				"to":   "json:prompt_cache_key",
+			},
+		},
+	}
+}
+
 var channelAffinitySetting = ChannelAffinitySetting{
 	Enabled:           true,
 	SwitchOnSuccess:   true,
@@ -87,7 +106,7 @@ var channelAffinitySetting = ChannelAffinitySetting{
 			},
 			ValueRegex:            "",
 			TTLSeconds:            0,
-			ParamOverrideTemplate: buildPassHeaderTemplate(codexCliPassThroughHeaders),
+			ParamOverrideTemplate: buildCodexCliPassHeaderTemplate(codexCliPassThroughHeaders),
 			SkipRetryOnFailure:    false,
 			IncludeUsingGroup:     true,
 			IncludeRuleName:       true,
