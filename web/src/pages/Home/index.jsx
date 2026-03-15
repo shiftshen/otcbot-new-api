@@ -193,14 +193,14 @@ const Home = () => {
                       {systemName}
                       <br />
                       <span className='shine-text'>
-                        {isChinese ? '大模型 API 平台' : 'LLM API Platform'}
+                        {isChinese ? '统一 AI 接口平台' : 'Unified AI API Gateway'}
                       </span>
                     </>
                   </h1>
                   <p className='text-base md:text-lg lg:text-xl text-semi-color-text-1 mt-4 md:mt-6 max-w-xl'>
                     {isChinese
-                      ? '充值后直接创建密钥，把 OpenAI 兼容请求的 Base URL 指向这里即可。'
-                      : 'Create a key and point your OpenAI-compatible Base URL here.'}
+                      ? '充值后创建密钥，直接用 OpenAI 兼容方式接入。当前默认示例模型使用 gpt-5.2。'
+                      : 'Create a key, use the OpenAI-compatible API, and start with gpt-5.2 by default.'}
                   </p>
                   {/* BASE URL 与端点选择 */}
                   <div className='flex flex-col md:flex-row items-center justify-center gap-4 w-full mt-4 md:mt-6 max-w-md'>
@@ -283,7 +283,9 @@ const Home = () => {
                       type='tertiary'
                       className='text-lg md:text-xl lg:text-2xl font-light'
                     >
-                      {t('支持众多的大模型供应商')}
+                      {isChinese
+                        ? '统一接入多种模型与工作流'
+                        : 'One endpoint for multiple models and workflows'}
                     </Text>
                   </div>
                   <div className='flex flex-wrap items-center justify-center gap-3 sm:gap-4 md:gap-6 lg:gap-8 max-w-5xl mx-auto px-4'>

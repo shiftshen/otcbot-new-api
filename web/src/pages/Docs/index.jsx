@@ -16,10 +16,13 @@ const Docs = () => {
     statusState?.status?.server_address || window.location.origin;
   const apiBaseUrl = `${serverAddress}/v1`;
   const currentModels = [
-    'gpt-4o-mini',
-    'gpt-4.1',
-    'claude-3-5-sonnet',
-    'gemini-2.0-flash',
+    'gpt-5.2',
+    'gpt-5.2-codex',
+    'gpt-5.1-codex',
+    'gpt-5.1-codex-mini',
+    'gpt-5.1-codex-max',
+    'gpt-5.3-codex',
+    'gpt-5.4',
   ];
 
   const examples = useMemo(
@@ -28,7 +31,7 @@ const Docs = () => {
   -H "Content-Type: application/json" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -d '{
-    "model": "gpt-4o-mini",
+    "model": "gpt-5.2",
     "messages": [
       {"role": "system", "content": "You are a helpful assistant."},
       {"role": "user", "content": "用一句话介绍 OTCBot"}
@@ -42,7 +45,7 @@ client = OpenAI(
 )
 
 resp = client.chat.completions.create(
-    model="gpt-4o-mini",
+    model="gpt-5.2",
     messages=[{"role": "user", "content": "Hello"}],
 )
 
@@ -55,7 +58,7 @@ const client = new OpenAI({
 });
 
 const resp = await client.chat.completions.create({
-  model: "gpt-4o-mini",
+  model: "gpt-5.2",
   messages: [{ role: "user", content: "Hello" }],
 });
 
@@ -69,7 +72,7 @@ $client = OpenAI::factory()
     ->make();
 
 $response = $client->chat()->create([
-    'model' => 'gpt-4o-mini',
+    'model' => 'gpt-5.2',
     'messages' => [
         ['role' => 'user', 'content' => 'Hello']
     ],
@@ -82,7 +85,7 @@ echo $response->choices[0]->message->content;`,
     .build();
 
 ChatCompletionCreateParams params = ChatCompletionCreateParams.builder()
-    .model("gpt-4o-mini")
+    .model("gpt-5.2")
     .addUserMessage("Hello")
     .build();
 
@@ -92,15 +95,8 @@ System.out.println(completion.choices().get(0).message().content().get(0));`,
   -H "Content-Type: application/json" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -d '{
-    "model": "gpt-4.1",
+    "model": "gpt-5.2",
     "input": "帮我写一句欢迎语"
-  }'`,
-      embeddings: `curl ${apiBaseUrl}/embeddings \\
-  -H "Content-Type: application/json" \\
-  -H "Authorization: Bearer YOUR_API_KEY" \\
-  -d '{
-    "model": "text-embedding-3-small",
-    "input": "OTCBot"
   }'`,
     }),
     [apiBaseUrl],
@@ -139,7 +135,7 @@ System.out.println(completion.choices().get(0).message().content().get(0));`,
         },
         {
           title: 'model not found',
-          desc: '你请求的模型当前账号不可用，请改成控制台/模型广场里可见的模型名。',
+          desc: '你请求的模型当前账号不可用。比如 gpt-4.5-preview 目前就不在这个 token 的可用模型列表里，请改成 gpt-5.2 或控制台里可见的模型名。',
         },
         {
           title: '429 Too Many Requests',
@@ -157,7 +153,7 @@ System.out.println(completion.choices().get(0).message().content().get(0));`,
         },
         {
           title: 'model not found',
-          desc: 'The requested model is not available to your account. Use one shown in the console.',
+          desc: 'The requested model is not available to your account. For example, gpt-4.5-preview is not available to this token right now. Use gpt-5.2 or another visible model.',
         },
         {
           title: '429 Too Many Requests',
@@ -174,8 +170,8 @@ System.out.println(completion.choices().get(0).message().content().get(0));`,
           </Title>
           <Paragraph type='secondary'>
             {isChinese
-              ? '你充值后创建的 sk- 密钥，就是调用接口时放在 Authorization 里的 Bearer Token。本站兼容 OpenAI 风格接口。'
-              : 'Your generated sk- key is the Bearer token used in Authorization. This site exposes OpenAI-compatible APIs.'}
+              ? '你充值后创建的 sk- 密钥，就是调用接口时放在 Authorization 里的 Bearer Token。本站兼容 OpenAI 风格接口，默认示例模型使用 gpt-5.2。'
+              : 'Your generated sk- key is the Bearer token used in Authorization. This site exposes OpenAI-compatible APIs, and the default example model is gpt-5.2.'}
           </Paragraph>
           <div className='flex flex-wrap gap-3'>
             <Link to='/console/token'>
@@ -216,8 +212,8 @@ System.out.println(completion.choices().get(0).message().content().get(0));`,
               </div>
               <Paragraph type='secondary'>
                 {isChinese
-                  ? 'OpenAI 兼容接口建议统一使用这个 Base URL。常用端点包括 /chat/completions、/responses、/embeddings、/images/generations。'
-                  : 'Use this as the OpenAI-compatible base URL. Common endpoints include /chat/completions, /responses, /embeddings, and /images/generations.'}
+                  ? 'OpenAI 兼容接口统一使用这个 Base URL。当前文档示例主要覆盖 /chat/completions 和 /responses。'
+                  : 'Use this as the OpenAI-compatible base URL. The examples on this page focus on /chat/completions and /responses.'}
               </Paragraph>
             </Space>
           </Card>
@@ -239,7 +235,7 @@ System.out.println(completion.choices().get(0).message().content().get(0));`,
 
         <Card>
           <Space vertical spacing='medium' style={{ width: '100%' }}>
-            <Title heading={4}>{isChinese ? '4. 常用模型' : '4. Common Models'}</Title>
+            <Title heading={4}>{isChinese ? '4. 当前可见模型' : '4. Currently Visible Models'}</Title>
             <div className='flex flex-wrap gap-2'>
               {currentModels.map((model) => (
                 <Tag key={model} size='large' color='blue'>
@@ -249,8 +245,8 @@ System.out.println(completion.choices().get(0).message().content().get(0));`,
             </div>
             <Paragraph type='secondary'>
               {isChinese
-                ? '最终以你账号在控制台和模型广场里可见的模型为准。模型名必须原样写入请求的 model 字段。'
-                : 'Always use models visible to your account in the console and model marketplace. The model value must match exactly.'}
+                ? '以上模型来自当前线上 token 的可见模型列表实测结果。默认接入示例统一使用 gpt-5.2；gpt-4.5-preview 当前并不在这个 token 的可用范围内。'
+                : 'These models come from a real /v1/models check on the current production token. The default example model is gpt-5.2; gpt-4.5-preview is not currently available to this token.'}
             </Paragraph>
           </Space>
         </Card>
@@ -267,9 +263,6 @@ System.out.println(completion.choices().get(0).message().content().get(0));`,
               </Button>
               <Button onClick={() => handleCopy(examples.responses)}>
                 {isChinese ? '复制 Responses 示例' : 'Copy Responses'}
-              </Button>
-              <Button onClick={() => handleCopy(examples.embeddings)}>
-                {isChinese ? '复制 Embeddings 示例' : 'Copy Embeddings'}
               </Button>
             </div>
           </Space>
@@ -290,12 +283,12 @@ System.out.println(completion.choices().get(0).message().content().get(0));`,
 
           <Card>
             <Space vertical spacing='medium' style={{ width: '100%' }}>
-              <Title heading={4}>JavaScript</Title>
+              <Title heading={4}>Node.js</Title>
               <pre className='overflow-x-auto rounded-xl bg-zinc-950 p-4 text-sm text-zinc-100'>
                 {examples.javascript}
               </pre>
               <Button onClick={() => handleCopy(examples.javascript)}>
-                {isChinese ? '复制 JavaScript 示例' : 'Copy JavaScript'}
+                {isChinese ? '复制 Node.js 示例' : 'Copy Node.js'}
               </Button>
             </Space>
           </Card>
